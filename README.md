@@ -1,5 +1,6 @@
 # synthdata-ml
 Repository to create synthetic data using a Recurrent Neural Network
+This works best for datasets which are modeled well by RNNs
 ## Getting started
 These instructions will get a working copy of the project on your local machine.
 ### Prerequisites
@@ -29,20 +30,21 @@ python model_cpu.py
 ```
 python model_gpu.py
 ```
-### Generation test
+### Generating Synthetic Data
 When prompted:
 ```
 Train or Generate: Generate
-File name (without extension): Novum Testamentum
+File name (without extension): somefile
 ```
-When complete, the model will spit out some text and save it to ./training_checkpoints/Novum Testamentum
+When complete, the model will spit out some text and save it to ./training_checkpoints/somefile/generatedXXX.txt
 ### Training test
 When prompted:
 ```
 Train or Generate: Train
 Number of Training Epochs: 20 [if CPU, 120 if GPU]
-File name (without extension): Novum Testamentum
+File name (without extension): somefile
 ```
+When complete, the model will save saved data checkpoints to ./training_checkpoints/somefile/
 ## Authors
 * **Caleb Carr** - Programmer and Documentation Author - [calebmcarr](https://github.com/calebmcarr)
 ## License
