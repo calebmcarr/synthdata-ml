@@ -1,6 +1,6 @@
 # synthdata-ml
-Repository to create synthetic data using a Recurrent Neural Network
-This works best for datasets which are modeled well by RNNs
+Repository to create synthetic data using a Recurrent Neural Network.  
+This works best for datasets which are modeled well by RNNs such as text.
 ## Getting started
 These instructions will get a working copy of the project on your local machine.
 ### Prerequisites
