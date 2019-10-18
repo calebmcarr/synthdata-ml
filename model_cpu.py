@@ -1,15 +1,20 @@
 #Caleb Carr | Caleb.M.Carr-1@ou.edu | 2019
-# GPL-3.0-only
+#GPL-3.0-only
 from __future__ import absolute_import, division, print_function
 import tensorflow as tf
+tf.enable_eager_execution()
 import numpy as np
 import os
 import time
 import random
 
+#limit gpu usage; uncomment to limit (need to import keras)
+'''config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction=.25
+session=tf.Session(config=config)'''
+
 #Splash screen
-print('Greek Prose Trainer and Generator')
-print('Caleb Carr | GPL v3 | 2019\n')
+print('Synthetic Data Trainer and Generator')
 purpose = input('Train or Generate: ')
 if purpose == 'Train':
     EPOCHS = int(input('Number of Training Epochs: '))
@@ -19,13 +24,12 @@ else:
 text_name = input('File name (without extension): ')
 path_to_file = './'+text_name+'.txt'
 text = open(path_to_file, 'rb').read().decode(encoding='utf-8')
+vocab = sorted(set(text))
+print ('{} unique characters'.format(len(vocab)))
 # Creating a mapping from unique characters to indices
 char2idx = {u:i for i, u in enumerate(vocab)}
 idx2char = np.array(vocab)
 text_as_int = np.array([char2idx[c] for c in text])
-# Show how the first 13 characters from the text are mapped to integers
-#print ('{} ---- characters mapped to int ---- > {}'.format(repr(text[:13]), text_as_int[:13]))
-# The maximum length sentence we want for a single input in characters
 seq_length = 100
 examples_per_epoch = len(text)//seq_length
 # Create training examples / targets
@@ -50,13 +54,12 @@ embedding_dim = 256
 # Number of RNN units
 rnn_units = 1024
 
-
+#use keras to create the model
+#CuDNNNLSTM is much,much faster than LSTM but worse results
 def build_model(vocab_size, embedding_dim, rnn_units, batch_size):
-    '''This function creates the keras model.  For this CPU model,
-       layers.LSTM is used.  model_gpu.py uses layers.CuDNNLSTM'''
   model = tf.keras.Sequential([
     tf.keras.layers.Embedding(vocab_size, embedding_dim,
-                              batch_input_shape=[batch_size, None]),
+                               batch_input_shape=[batch_size, None]),
     tf.keras.layers.LSTM(rnn_units,
                         return_sequences=True,
                         stateful=True,
@@ -74,20 +77,22 @@ batch_size=BATCH_SIZE)
 def loss(labels, logits):
   return tf.keras.losses.sparse_categorical_crossentropy(labels, logits, from_logits=True)
 
-
-model.compile(optimizer='adam', loss=loss)
+opt = tf.train.AdamOptimizer(learning_rate=.002)
+model.compile(optimizer=opt, loss=loss)
 # Directory where the checkpoints will be saved
+#checkpoint_dir = './training_checkpoints/'+text_name
 checkpoint_dir = './training_checkpoints/'+text_name
 # Name of the checkpoint files
-#uncomment the following and comment the following line if you want to save every single checkpoint model
+#uncomment following if you want to save every epoch
 #checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt_{epoch}")
-checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
+checkpoint_prefix = os.path.join(checkpoint_dir,"ckpt")
 checkpoint_callback=tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_prefix,
     save_weights_only=True)
 
 if purpose == 'Train':
-    history = model.fit(dataset, epochs=EPOCHS, callbacks=[checkpoint_callback])
+    history = model.fit(dataset, epochs=EPOCHS,steps_per_epoch=1, 
+    callbacks=[checkpoint_callback])
 
 tf.train.latest_checkpoint(checkpoint_dir)
 model = build_model(vocab_size, embedding_dim, rnn_units, batch_size=1)
@@ -107,7 +112,7 @@ def generate_text(model, start_string):
   # Low temperatures results in more predictable text.
   # Higher temperatures results in more surprising text.
   # Experiment to find the best setting.
-  temperature = .2
+  temperature = .33
   # Here batch size == 1
   model.reset_states()
   for i in range(num_generate):
@@ -123,9 +128,9 @@ def generate_text(model, start_string):
       text_generated.append(idx2char[predicted_id])
 
   return (start_string + ''.join(text_generated))
-
+ 
 if purpose == 'Generate':
-    generated_text = generate_text(model, start_string=u"Παῦλος ἀπόστολος Χριστοῦ Ἰησοῦ")
+    generated_text = generate_text(model, start_string=u"Insert relevant starting string here")
     print(generated_text)
     ext = str(random.randint(0,300))
     f = open('./training_checkpoints/'+text_name+'/generated'+ext+'.txt','w')
