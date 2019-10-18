@@ -14,8 +14,7 @@ config.gpu_options.per_process_gpu_memory_fraction=.25
 session=tf.Session(config=config)'''
 
 #Splash screen
-print('Greek Prose Trainer and Generator')
-print('Caleb Carr | University of Oklahoma | 2019\n')
+print('Synthetic Data Trainer and Generator')
 purpose = input('Train or Generate: ')
 if purpose == 'Train':
     EPOCHS = int(input('Number of Training Epochs: '))
@@ -131,7 +130,7 @@ def generate_text(model, start_string):
   return (start_string + ''.join(text_generated))
  
 if purpose == 'Generate':
-    generated_text = generate_text(model, start_string=u"Παῦλος ἀπόστολος Χριστοῦ Ἰησοῦ")
+    generated_text = generate_text(model, start_string=u"Insert relevant starting string here")
     print(generated_text)
     ext = str(random.randint(0,300))
     f = open('./training_checkpoints/'+text_name+'/generated'+ext+'.txt','w')
